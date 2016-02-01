@@ -3,7 +3,6 @@
 var program = require('commander')
   , Nedb = require('nedb')
   , mongodb = require('mongodb')
-  , async = require('async')
   , fs = require('fs')
   , config = {}
   , mdb
@@ -79,8 +78,8 @@ mdb.open(function (err) {
     console.log("Inserting documents (every dot represents one document) ...");
     for(var i = 0; i < data.length; i++) {
         ndb = new Nedb();
-        ndb._insertInCache(deserialize(data[i]));
-        async.each(ndb.data, function (doc, cb) {
+        ndb.insert(deserialize(data[i]));
+        ndb.find({}, function (doc, cb) {
           process.stdout.write('.');
           if (!config.keepIds) { delete doc._id; }
           collection.insert(doc, function (err) { return cb(err); });
