@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var program = require('commander')
-  , Nedb = require('nedb')
+  , model = require('nedb/lib/model')
   , mongodb = require('mongodb')
   , fs = require('fs')
   , config = {}
@@ -77,32 +77,17 @@ mdb.open(function (err) {
     }
     console.log("Inserting documents (every dot represents one document) ...");
     for(var i = 0; i < data.length; i++) {
-        ndb = new Nedb();
-        ndb.insert(deserialize(data[i]));
-        ndb.find({}, function (doc, cb) {
-          process.stdout.write('.');
-          if (!config.keepIds) { delete doc._id; }
-          collection.insert(doc, function (err) { return cb(err); });
-          }, function (err) {
-          console.log("");
-          if (err) {
-              console.log("An error happened while inserting data");
-              console.log(err);
-              process.exit(1);
-          }
+        var doc = model.deserialize(data[i]);
+        process.stdout.write('.');
+        if (!config.keepIds) { delete doc._id; }
+        collection.insert(doc, function (err) {
+            if(err) {
+                console.log(err);
+                process.exit(-1);
+            }
         });
     }
     console.log("Everything went fine");
     process.exit(0);
   });
 });
-
-function deserialize (rawData) {
-  return JSON.parse(rawData, function (k, v) {
-    if (k === '$$date') { return new Date(v); }
-    if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean' || v === null) { return v; }
-    if (v && v.$$date) { return v.$$date; }
-
-    return v;
-  });
-}
