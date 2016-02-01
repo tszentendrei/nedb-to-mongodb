@@ -4,6 +4,7 @@ var program = require('commander')
   , Nedb = require('nedb')
   , mongodb = require('mongodb')
   , async = require('async')
+  , fs = require('fs')
   , config = {}
   , mdb
   , ndb
@@ -61,38 +62,39 @@ mdb.open(function (err) {
 
   collection = mdb.collection(config.mongodbCollection);
 
-  ndb = new Nedb(config.nedbDatafile);
-  ndb.loadDatabase(function (err) {
+  fs.readFile(config.nedbDatafile, 'utf8', function(err, rawData) {
     if (err) {
       console.log("Error while loading the data from the NeDB database");
       console.log(err);
       process.exit(1);
     }
-
-    if (ndb.data.length === 0) {
+    var data = rawData.split('\n');
+    if (data.length === 0) {
       console.log("The NeDB database at " + config.nedbDatafile + " contains no data, no work required");
       console.log("You should probably check the NeDB datafile path though!");
       process.exit(0);
     } else {
-      console.log("Loaded data from the NeDB database at " + config.nedbDatafile + ", " + ndb.data.length + " documents");
+      console.log("Loaded data from the NeDB database at " + config.nedbDatafile + ", " + data.length + " documents");
     }
-
     console.log("Inserting documents (every dot represents one document) ...");
-    async.each(ndb.data, function (doc, cb) {
-      process.stdout.write('.');
-      if (!config.keepIds) { delete doc._id; }
-      collection.insert(doc, function (err) { return cb(err); });
-    }, function (err) {
-      console.log("");
-      if (err) {
-        console.log("An error happened while inserting data");
-        console.log(err);
-        process.exit(1);
-      } else {
-        console.log("Everything went fine");
-        process.exit(0);
-      }
-    });
+    for(var i = 0; i < rawData.length; i++) {
+        ndb = new Nedb();
+        ndb._insertInCache(ndb.deserialize(rawData[i]));
+        async.each(ndb.data, function (doc, cb) {
+          process.stdout.write('.');
+          if (!config.keepIds) { delete doc._id; }
+          collection.insert(doc, function (err) { return cb(err); });
+          }, function (err) {
+          console.log("");
+          if (err) {
+              console.log("An error happened while inserting data");
+              console.log(err);
+              process.exit(1);
+          }
+        });
+    }
+    console.log("Everything went fine");
+    process.exit(0);
   });
 });
 
