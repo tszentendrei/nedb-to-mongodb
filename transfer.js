@@ -77,9 +77,9 @@ mdb.open(function (err) {
       console.log("Loaded data from the NeDB database at " + config.nedbDatafile + ", " + data.length + " documents");
     }
     console.log("Inserting documents (every dot represents one document) ...");
-    for(var i = 0; i < rawData.length; i++) {
+    for(var i = 0; i < data.length; i++) {
         ndb = new Nedb();
-        ndb._insertInCache(deserialize(rawData[i]));
+        ndb._insertInCache(deserialize(data[i]));
         async.each(ndb.data, function (doc, cb) {
           process.stdout.write('.');
           if (!config.keepIds) { delete doc._id; }
