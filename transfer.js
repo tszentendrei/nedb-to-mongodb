@@ -77,7 +77,12 @@ mdb.open(function (err) {
     }
     console.log("Inserting documents (every dot represents one document) ...");
     for(var i = 0; i < data.length; i++) {
-        var doc = model.deserialize(data[i]);
+        try {
+            var doc = model.deserialize(data[i]);
+        }
+        catch(e) {
+            process.stdout.write('!');
+        }
         process.stdout.write('.');
         if (!config.keepIds) { delete doc._id; }
         collection.insert(doc, function (err) {
