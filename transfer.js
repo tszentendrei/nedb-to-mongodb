@@ -79,7 +79,7 @@ mdb.open(function (err) {
     console.log("Inserting documents (every dot represents one document) ...");
     for(var i = 0; i < rawData.length; i++) {
         ndb = new Nedb();
-        ndb._insertInCache(ndb.deserialize(rawData[i]));
+        ndb._insertInCache(deserialize(rawData[i]));
         async.each(ndb.data, function (doc, cb) {
           process.stdout.write('.');
           if (!config.keepIds) { delete doc._id; }
@@ -98,3 +98,12 @@ mdb.open(function (err) {
   });
 });
 
+function deserialize (rawData) {
+  return JSON.parse(rawData, function (k, v) {
+    if (k === '$$date') { return new Date(v); }
+    if (typeof v === 'string' || typeof v === 'number' || typeof v === 'boolean' || v === null) { return v; }
+    if (v && v.$$date) { return v.$$date; }
+
+    return v;
+  });
+}
