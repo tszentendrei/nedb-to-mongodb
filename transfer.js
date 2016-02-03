@@ -67,35 +67,23 @@ mdb.open(function (err) {
   });
   
   
-  rl.on('line', function(rawData) {
-    var data = rawData.split('\n');
-    if (data.length === 0) {
-      console.log("The NeDB database at " + config.nedbDatafile + " contains no data, no work required");
-      console.log("You should probably check the NeDB datafile path though!");
-      process.exit(0);
-    } else {
-      console.log("Loaded data from the NeDB database at " + config.nedbDatafile + ", " + data.length + " documents");
-    }
+  rl.on('line', function(data) {
     console.log("Inserting documents (every dot represents one document) ...");
-    for(var i = 0; i < data.length; i++) {
-        try {
-            var doc = model.deserialize(data[i]);
-        }
-        catch(e) {
-            process.stdout.write('!');
-            console.log(data[i]);
-            continue;
-        }
-        process.stdout.write('.');
-        if (!config.keepIds) { delete doc._id; }
-        collection.insert(doc, function (err) {
-            if(err) {
-                console.log(err);
-                process.exit(-1);
-            }
-        });
+    try {
+        var doc = model.deserialize(data[i]);
     }
-    console.log("Everything went fine");
-    process.exit(0);
+    catch(e) {
+        process.stdout.write('!');
+        console.log(data[i]);
+        continue;
+    }
+    process.stdout.write('.');
+    if (!config.keepIds) { delete doc._id; }
+    collection.insert(doc, function (err) {
+        if(err) {
+            console.log(err);
+            process.exit(-1);
+        }
+    });
   });
 });
