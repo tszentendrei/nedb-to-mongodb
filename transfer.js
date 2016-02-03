@@ -94,7 +94,7 @@ mdb.open(function (err) {
             }
         });
         
-        rl.on("end", function() {
+        rl.on("close", function() {
             console.log("Everything went fine.");
             mdb.close();
         })
