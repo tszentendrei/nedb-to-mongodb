@@ -4,6 +4,7 @@ var program = require('commander')
   , model = require('nedb/lib/model')
   , mongodb = require('mongodb')
   , fs = require('fs')
+  , readline = require('readline')
   , config = {}
   , mdb
   , ndb
@@ -61,12 +62,12 @@ mdb.open(function (err) {
 
   collection = mdb.collection(config.mongodbCollection);
 
-  fs.readFile(config.nedbDatafile, 'utf8', function(err, rawData) {
-    if (err) {
-      console.log("Error while loading the data from the NeDB database");
-      console.log(err);
-      process.exit(1);
-    }
+  var rl = readline.createInterface({
+      input: fs.createReadStream(config.nedbDatafile)
+  });
+  
+  
+  rl.on('line', function(rawData) {
     var data = rawData.split('\n');
     if (data.length === 0) {
       console.log("The NeDB database at " + config.nedbDatafile + " contains no data, no work required");
