@@ -62,28 +62,36 @@ mdb.open(function (err) {
 
   collection = mdb.collection(config.mongodbCollection);
 
+  var fstream = fs.createReadStream(config.nedbDatafile);
+  fstream.on("error", function(err) {
+      console.log("Error while loading the data from the NeDB database");
+      console.log(err);
+      process.exit(1);
+  });
+  fstream.on("end") {
+      console.log("Everything went fine")
+  }
+  
   var rl = readline.createInterface({
       input: fs.createReadStream(config.nedbDatafile)
   });
   
-  
+  console.log("Inserting documents (every dot represents one document) ...");
   rl.on('line', function(data) {
-    console.log("Inserting documents (every dot represents one document) ...");
     try {
-        var doc = model.deserialize(data[i]);
+        var doc = model.deserialize(data);
+        process.stdout.write('.');
+        if (!config.keepIds) { delete doc._id; }
+        collection.insert(doc, function (err) {
+            if(err) {
+                console.log(err);
+                process.exit(-1);
+            }
+        });
     }
     catch(e) {
         process.stdout.write('!');
-        console.log(data[i]);
-        continue;
+        console.log(data);
     }
-    process.stdout.write('.');
-    if (!config.keepIds) { delete doc._id; }
-    collection.insert(doc, function (err) {
-        if(err) {
-            console.log(err);
-            process.exit(-1);
-        }
-    });
   });
 });
