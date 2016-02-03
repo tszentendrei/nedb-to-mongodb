@@ -82,6 +82,8 @@ mdb.open(function (err) {
         }
         catch(e) {
             process.stdout.write('!');
+            console.log(data[i]);
+            continue;
         }
         process.stdout.write('.');
         if (!config.keepIds) { delete doc._id; }
