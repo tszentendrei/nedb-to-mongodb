@@ -68,37 +68,37 @@ mdb.open(function (err) {
       console.log(err);
       process.exit(1);
   });
-  fstream.on("end", function() {
-      console.log("Everything went fine");
-      mdb.close();
-  });
-  fstream.on("close", function() {
-      console.log("Everything went fine");
-      mdb.close();
-  });
+
   fstream.on("open", function() {
       console.log("Inserting documents (every dot represents one document) ...");
-  })
-  
-  var rl = readline.createInterface({
-      input: fs.createReadStream(config.nedbDatafile)
-  });
-  
-  rl.on('line', function(data) {
-    try {
-        var doc = model.deserialize(data);
-        process.stdout.write('.');
-        if (!config.keepIds) { delete doc._id; }
-        collection.insert(doc, function (err) {
-            if(err) {
-                console.log(err);
-                process.exit(-1);
+      
+        var rl = readline.createInterface({
+            input: fs.createReadStream(config.nedbDatafile)
+        });
+        
+        rl.on('line', function(data) {
+            try {
+                var doc = model.deserialize(data);
+                process.stdout.write('.');
+                if (!config.keepIds) { delete doc._id; }
+                collection.insert(doc, function (err) {
+                    if(err) {
+                        console.log(err);
+                        process.exit(-1);
+                    }
+                });
+            }
+            catch(e) {
+                process.stdout.write('!');
+                console.log(data);
             }
         });
-    }
-    catch(e) {
-        process.stdout.write('!');
-        console.log(data);
-    }
+        
+        rl.on("end", function() {
+            console.log("Everything went fine.");
+            mdb.close();
+        })
+
   });
+  
 });
