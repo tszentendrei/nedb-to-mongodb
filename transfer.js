@@ -68,9 +68,9 @@ mdb.open(function (err) {
       console.log(err);
       process.exit(1);
   });
-  fstream.on("end") {
+  fstream.on("end", function() {
       console.log("Everything went fine")
-  }
+  });
   
   var rl = readline.createInterface({
       input: fs.createReadStream(config.nedbDatafile)
