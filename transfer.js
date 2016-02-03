@@ -69,14 +69,21 @@ mdb.open(function (err) {
       process.exit(1);
   });
   fstream.on("end", function() {
-      console.log("Everything went fine")
+      console.log("Everything went fine");
+      mdb.close();
   });
+  fstream.on("close", function() {
+      console.log("Everything went fine");
+      mdb.close();
+  });
+  fstream.on("open", function() {
+      console.log("Inserting documents (every dot represents one document) ...");
+  })
   
   var rl = readline.createInterface({
       input: fs.createReadStream(config.nedbDatafile)
   });
   
-  console.log("Inserting documents (every dot represents one document) ...");
   rl.on('line', function(data) {
     try {
         var doc = model.deserialize(data);
