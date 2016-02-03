@@ -68,6 +68,8 @@ mdb.open(function (err) {
       console.log(err);
       process.exit(1);
   });
+  
+  var rl_closed = false;
 
   fstream.on("open", function() {
       console.log("Inserting documents (every dot represents one document) ...");
@@ -86,6 +88,9 @@ mdb.open(function (err) {
                         console.log(err);
                         process.exit(-1);
                     }
+                    if(rl_closed) {
+                        mdb.close();
+                    }
                 });
             }
             catch(e) {
@@ -96,7 +101,7 @@ mdb.open(function (err) {
         
         rl.on("close", function() {
             console.log("Everything went fine.");
-            mdb.close();
+            rl_closed = false;
         })
 
   });
